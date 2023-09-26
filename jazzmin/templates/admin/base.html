@@ -1,0 +1,1158 @@
+{% load google_analytics_gtag %}
+{% load i18n static jazzmin admin_urls %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+{% load static %}
+{% google_analytics_gtag %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <!--  Prevent admin panel being crawled by search engines -->
+    <meta name="robots" content="none, noarchive">
+    <title>{% block title %}{{ title }} | {{ jazzmin_settings.site_title }}{% endblock %}</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="{% static "vendor/fontawesome-free/css/all.min.css" %}">
+    <link rel="stylesheet" href="/static/analysis_dash/assets/vendor/css/core.css"
+          class="template-customizer-core-css"/>
+    <!-- Bootstrap and adminLTE -->
+    <link rel="stylesheet" href="{% static "vendor/adminlte/css/adminlte.min.css" %}" id="adminlte-css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Core CSS -->
+    <!-- Icons. Uncomment required icon fonts -->
+    <link rel="stylesheet" href="/static/analysis_dash/assets/vendor/fonts/boxicons.css"/>
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="/static/analysis_dash/assets/vendor/css/core.css"
+          class="template-customizer-core-css"/>
+    <link rel="stylesheet" href="/static/analysis_dash/assets/vendor/css/theme-default.css"
+          class="template-customizer-theme-css"/>
+    <link rel="stylesheet" href="/static/analysis_dash/assets/css/demo.css"/>
+
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="/static/analysis_dash/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css"/>
+
+    <link rel="stylesheet" href="/static/analysis_dash/assets/vendor/libs/apex-charts/apex-charts.css"/>
+    <!-- Helpers -->
+    <script src="/static/analysis_dash/assets/vendor/js/helpers.js"></script>
+
+    <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
+    <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
+    <script src="/static/analysis_dash/assets/js/config.js"></script>
+
+    <script
+            src="https://unpkg.com/react@17/umd/react.development.js"
+            crossorigin
+    ></script>
+    <script
+            src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
+            crossorigin
+    ></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Bootswatch theme -->
+    {% if jazzmin_ui.theme.name != 'default' %}
+        <link rel="stylesheet" href="{{ jazzmin_ui.theme.src }}" id="jazzmin-theme"/>
+    {% endif %}
+
+    {% if jazzmin_ui.dark_mode_theme %}
+        <link rel="stylesheet" href="{{ jazzmin_ui.dark_mode_theme.src }}" id="jazzmin-dark-mode-theme"
+              media="(prefers-color-scheme: dark)"/>
+    {% endif %}
+    <!-- Custom fixes for django -->
+    <link rel="stylesheet" href="{% static "jazzmin/css/main.css" %}">
+
+    {% if jazzmin_settings.custom_css %}
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{% static jazzmin_settings.custom_css %}">
+    {% endif %}
+    <!-- favicons -->
+    {% if request.user.is_authenticated %}
+        <link rel="icon" href="{{ request.user.company.logo.url }}" sizes="32x32" type="image/png">
+    {% else %}
+        <link rel="shortcut icon" href="{% static jazzmin_settings.site_icon %}" type="image/png">
+    {% endif %}
+    {% if request.user.is_authenticated %}
+        <link rel="icon" href="{{ request.user.company.logo.url }}" sizes="32x32" type="image/png">
+    {% else %}
+        <link rel="icon" href="{% static jazzmin_settings.site_icon %}" sizes="32x32" type="image/png">
+    {% endif %}
+    {% if jazzmin_settings.use_google_fonts_cdn %}
+        <!-- Google Font: Source Sans Pro -->
+        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+    {% endif %}
+    {% block extrastyle %} {% endblock %}
+    {% block extrahead %} {% endblock %}
+</head>
+<body class="hold-transition{% if not jazzmin_settings.show_sidebar %} no-sidebar{% else %} sidebar-mini{% endif %} {% sidebar_status request %} {% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %} {{ jazzmin_ui.body_classes }} {% if jazzmin_ui.dark_mode_theme %}theme-dark{% endif %}"
+      data-admin-utc-offset="{% now "Z" %}">
+<div class="wrapper">
+    {% if not is_popup %}
+        <nav class="main-header navbar navbar-expand {{ jazzmin_ui.navbar_classes }}" id="jazzy-navbar">
+            <ul class="navbar-nav">
+                {% if jazzmin_settings.show_sidebar %}
+                    <li class="nav-item">
+                        <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i
+                                class="fas fa-bars"></i></a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a href="{% url 'admin:index' %}" class="brand-link">
+                            <img src="{{ request.user.company.logo.url }}"
+                                 alt="{{ jazzmin_settings.site_header }} Logo"
+                                 class="{{ jazzmin_settings.site_logo_classes }} brand-image"
+                                 style="opacity: .8; margin: 0 0 0 5px;">
+                        </a>
+                    </li>
+                {% endif %}
+                {% get_top_menu user request.current_app|default:"admin" as top_menu %}
+                {% for link in top_menu %}
+                    <li class="nav-item d-none d-sm-inline-block{% if link.children %} dropdown{% endif %}">
+                        {% if link.children %}
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown"
+                               aria-haspopup="true" aria-expanded="false">
+                                {{ link.name }}
+                            </a>
+                            <div class="dropdown-menu">
+                                {% for child in link.children %}
+                                    <a class="dropdown-item" href="{{ child.url }}"
+                                       {% if link.new_window %}target="_blank"{% endif %}>{{ child.name }}</a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <a href="{{ link.url }}" class="nav-link"
+                               {% if link.new_window %}target="_blank"{% endif %}>{{ link.name }}</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+            {% if jazzmin_settings.search_model %}
+                {% for search_model in jazzmin_settings.search_models_parsed %}
+                    <form action="{{ search_model.search_url }}" method="GET" class="form-inline ml-3">
+                        <div class="input-group input-group-sm">
+                            <input class="form-control form-control-navbar" name="q" type="search"
+                                   placeholder="{% trans 'Search' %} {{ search_model.search_name }}..."
+                                   aria-label="{% trans 'Search' %} {{ search_model.search_name }}...">
+                            <div class="input-group-append">
+                                <button class="btn btn-navbar" type="submit">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                {% endfor %}
+            {% endif %}
+            <ul class="navbar-nav ml-auto">
+                {% if jazzmin_settings.show_ui_builder %}
+                    <li class="nav-item">
+                        <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
+                            <i class="fas fa-th-large"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                {% if 'django.contrib.admindocs'|app_is_installed %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'django-admindocs-docroot' %}" role="button">
+                            <i class="fas fa-book"></i>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% if jazzmin_settings.language_chooser %}
+                    {% get_available_languages as LANGUAGES %}
+                    {% get_language_info_list for LANGUAGES as languages %}
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link btn" data-toggle="dropdown" href="#" title="Choose language">
+                            <i class="fas fa-globe" aria-hidden="true"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-lg dropdown-menu-left" id="jazzy-languagemenu">
+                            <form action="{% url 'set_language' %}" method="post">
+                                {% csrf_token %}
+                                <input name="next" type="hidden"
+                                       value="{{ request.get_full_path|remove_lang:LANGUAGE_CODE }}"/>
+                                {% for language in languages %}
+                                    <button
+                                            type="submit"
+                                            name="language"
+                                            value="{{ language.code }}"
+                                            class="dropdown-item {% if language.code == LANGUAGE_CODE %}active{% endif %}"
+                                            lang="{{ language.code }}"
+                                    >
+                                        {{ language.name_local|title }}
+                                    </button>
+                                {% endfor %}
+                            </form>
+                        </div>
+                    </li>
+                {% endif %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link btn d-flex" data-toggle="dropdown" href="#"
+                       title="{{ request.user }}">
+                        <div class="image">
+                            {% if request.user.profile_pic %}
+                                <img src="{{ request.user.get_profile_pic_url }}" width="40"
+                                     class="img-circle" alt="User Image">
+                            {% else %}
+                                <i class="fas fa-inverse user-profile fa-user-circle"></i>
+                            {% endif %}
+                        </div>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-left" id="jazzy-usermenu">
+                        <span class="dropdown-header">{% trans 'Account' %} {{ request.user.name }}</span>
+                        <div class="dropdown-divider"></div>
+                        <a href="{% url 'admin:password_change' %}" class="dropdown-item">
+                            <i class="fas fa-key mr-2"></i> {% trans 'Change password' %}
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{% url 'admin:logout' %}" class="dropdown-item">
+                            <i class="fas fa-users mr-2"></i> {% trans 'Log out' %}
+                        </a>
+                        {% get_user_menu user request.current_app|default:"admin" as user_menu %}
+                        {% for link in user_menu %}
+                            <div class="dropdown-divider"></div>
+                            <a href="{{ link.url }}" class="dropdown-item"
+                               {% if link.new_window %}target="_blank"{% endif %}>
+                                <i class="{{ link.icon }} mr-2"></i> {% trans link.name %}
+                            </a>
+                        {% endfor %}
+                        <div class="dropdown-divider"></div>
+                        {% if perms|can_view_self %}
+                            <a href="{% jazzy_admin_url request.user request.current_app|default:"admin" %}"
+                               class="dropdown-item dropdown-footer">{% trans 'See Profile' %}</a>
+                        {% endif %}
+                    </div>
+                </li>
+            </ul>
+        </nav>
+        {% block sidebar %}
+            {% if jazzmin_settings.show_sidebar %}
+                {% get_side_menu as side_menu_list %}
+                <aside class="main-sidebar elevation-4 {{ jazzmin_ui.sidebar_classes }}" id="jazzy-sidebar">
+                    <a href="{% url 'admin:index' %}" class="brand-link {{ jazzmin_ui.brand_classes }}" id="jazzy-logo">
+                        <img src="{{ request.user.company.logo.url }}" alt="{{ jazzmin_settings.site_header }} Logo"
+                             class="{{ jazzmin_settings.site_logo_classes }} brand-image elevation-3"
+                             style="opacity: .8">
+                        <span class="brand-text font-weight-light">{{ request.user.company.name }}</span>
+                    </a>
+                    <div class="sidebar">
+                        <nav class="mt-2">
+                            <ul class="nav nav-pills nav-sidebar flex-column {{ jazzmin_ui.sidebar_list_classes }}"
+                                data-widget="treeview" role="menu" data-collapsible="false">
+                                <li class="nav-item" style="margin-top: 60">
+                                    <a href="{% url 'admin:index' %}" class="nav-link">
+                                        <i class="nav-icon fas fa-th-large"></i>
+                                        <p>{% trans 'Analysis Dashboard' %}</p>
+                                    </a>
+                                </li>
+                                {% if jazzmin_settings.navigation_expanded %}
+                                    {% for app in side_menu_list %}
+                                        <li class="nav-header">{{ app.name }}</li>
+                                        {% for model in app.models %}
+                                            <li class="nav-item">
+                                                {% if model.url %}
+                                                    <a href="{{ model.url }}" class="nav-link">
+                                                        <i class="nav-icon {{ model.icon }}"></i>
+                                                        <p>{{ model.name }}</p>
+                                                    </a>
+                                                {% else %}
+                                                    <span class="nav-link disabled">
+                                                                <i class="nav-icon {{ model.icon }}"></i>
+                                                                        <p>{{ model.name }}</p>
+                                                                 </span>
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                {% else %}
+                                    {% for app in side_menu_list %}
+                                        <li class="nav-item has-treeview">
+                                            <a href="#" class="nav-link">
+                                                <i class="nav-icon {{ app.icon }}"></i>
+                                                <p>{{ app.name|truncatechars:21 }} <i
+                                                        class="fas fa-angle-left right"></i></p>
+                                            </a>
+                                            <ul class="nav nav-treeview" style="display: none;">
+                                                {% for model in app.models %}
+                                                    <li class="nav-item">
+                                                        <a href="
+
+
+
+
+
+
+
+
+
+
+                                                                {% if model.url %}{{ model.url }}{% else %}javascript:void(0){% endif %}"
+                                                           class="nav-link">
+                                                            <i class="nav-icon {{ model.icon }}"></i>
+                                                            <p>{{ model.name }}</p>
+                                                        </a>
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </li>
+                                    {% endfor %}
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </aside>
+            {% endif %}
+        {% endblock %}
+    {% endif %}
+    <div class="content-wrapper" {% if is_popup %}style="margin-left:0px; padding-top: 20px;"{% endif %}>
+        {% block page_content %}
+            {% if not is_popup %}
+                <div class="content border-bottom mb-2">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-12 col-md-auto d-flex flex-grow-1 align-items-center">
+                                <h1 class="h4 m-0 pr-3 mr-3 border-right">{% block content_title %}{% endblock %}</h1>
+                                {% block breadcrumbs %}{% endblock %}
+                            </div>
+                            {% block page_actions %}{% endblock %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            <div class="content">
+                <div class="container-fluid">
+                    <section id="content" class="content">
+                        {% block messages %}
+                            {% for message in messages %}
+                                <div class="toast-container p-3 top-0 end-0">
+                                    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                                        {% if message.tags == 'success' %}
+                                            <div class="toast-header bg-success">
+                                                <strong class="me-auto">Info</strong>
+                                                <button type="button" class="btn-close" data-bs-dismiss="toast"
+                                                        aria-label="Close"></button>
+                                            </div>
+                                            <div class="toast-body bg-success">
+                                                {{ message }}
+                                            </div>
+                                        {% elif message.tags == 'error' %}
+                                            <div class="toast-header bg-danger">
+                                                <strong class="me-auto">Info</strong>
+                                                <button type="button" class="btn-close" data-bs-dismiss="toast"
+                                                        aria-label="Close"></button>
+                                            </div>
+                                            <div class="toast-body bg-danger">
+                                                {{ message }}
+                                            </div>
+                                        {% elif message.tags == 'warning' %}
+                                            <div class="toast-header bg-warning">
+                                                <strong class="me-auto">Info</strong>
+                                                <button type="button" class="btn-close" data-bs-dismiss="toast"
+                                                        aria-label="Close"></button>
+                                            </div>
+                                            <div class="toast-body bg-warning">
+                                                {{ message }}
+                                            </div>
+                                        {% elif message.tags == 'info' %}
+                                            <div class="toast-header bg-info">
+                                                <strong class="me-auto">Info</strong>
+                                                <button type="button" class="btn-close" data-bs-dismiss="toast"
+                                                        aria-label="Close"></button>
+                                            </div>
+                                            <div class="toast-body bg-info">
+                                                {{ message }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% endblock messages %}
+                        <div class="row">
+                            {% block content %} {% endblock %}
+                        </div>
+                    </section>
+                </div>
+            </div>
+        {% endblock %}
+    </div>
+    {#    {% block footer %}#}
+    {#        {% if not is_popup %}#}
+    {#            <footer class="main-footer {{ jazzmin_ui.footer_classes }}">#}
+    {#                <div class="float-right d-none d-sm-inline">#}
+    {#                    <b>{% trans 'Jazzmin version' %}</b> {% get_jazzmin_version %}#}
+    {#                </div>#}
+    {#                {% autoescape off %}#}
+    {#                    <strong>{% trans 'Copyright' %}#}
+    {#                        &copy; {% now 'Y' %} {{ jazzmin_settings.copyright }}.</strong>#}
+    {#                    {% trans 'All rights reserved.' %}#}
+    {#                {% endautoescape %}#}
+    {#            </footer>#}
+    {#            {% if jazzmin_settings.show_ui_builder %}#}
+    {#                {% include 'jazzmin/includes/ui_builder_panel.html' %}#}
+    {#            {% endif %}#}
+    {#        {% endif %}#}
+    {#    {% endblock %}#}
+
+
+</div>
+
+
+
+{% if jazzmin_settings.show_ui_builder %}
+    <div id="codeBox" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">{% trans 'UI Configuration' %}</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>{% trans 'Copy this info your settings file to persist these UI changes' %}</p>
+                    <pre><code></code></pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn {{ jazzmin_ui.button_classes.danger }}"
+                            data-dismiss="modal">{% trans 'Close' %}</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endif %}
+
+<!-- jQuery -->
+<script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
+<!-- Bootstrap 4 -->
+<script src="{% static "vendor/bootstrap/js/bootstrap.min.js" %}"></script>
+<!-- AdminLTE App -->
+<script src="{% static "vendor/adminlte/js/adminlte.min.js" %}"></script>
+{% include "toasts.html" %}
+
+<script src="https://unpkg.com/htmx.org@1.8.0"
+        integrity="sha384-cZuAZ+ZbwkNRnrKi05G/fjBX+azI9DNOkNYysZ0I/X5ZFgsmMiBXgDZof30F5ofc"
+        crossorigin="anonymous"></script>
+<script src="{% static 'toasts.js' %}"></script>
+<!-- Django customisations -->
+<script src="{% static "jazzmin/js/main.js" %}"></script>
+
+{% if jazzmin_settings.custom_js %}
+    <script src="{% static jazzmin_settings.custom_js %}"></script>
+{% endif %}
+
+{% if jazzmin_settings.show_ui_builder %}
+    <script>
+        window.ui_changes = {{ jazzmin_ui.raw|as_json|safe }};
+    </script>
+    <script src="{% static "jazzmin/js/ui-builder.js" %}"></script>
+{% endif %}
+
+{% block extrajs %}{% endblock %}
+
+<script src="/static/analysis_dash/assets/vendor/libs/popper/popper.js"></script>
+<script src="/static/analysis_dash/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+
+<script src="/static/analysis_dash/assets/vendor/js/menu.js"></script>
+<!-- endbuild -->
+
+<!-- Vendors JS -->
+<script src="/static/analysis_dash/assets/vendor/libs/apex-charts/apexcharts.js"></script>
+
+<!-- Main JS -->
+<script src="/static/analysis_dash/assets/js/main.js"></script>
+
+<!-- Page JS -->
+{#<script src="/static/analysis_dash/assets/js/dashboards-analytics.js"></script>#}
+
+<!-- Place this tag in your head or just before your close body tag. -->
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
+<script>
+    /**
+     * Dashboard Analytics
+     */
+
+    'use strict';
+
+    (function () {
+        let cardColor, headingColor, axisColor, shadeColor, borderColor;
+
+        cardColor = config.colors.white;
+        headingColor = config.colors.headingColor;
+        axisColor = config.colors.axisColor;
+        borderColor = config.colors.borderColor;
+
+        // Total Revenue Report Chart - Bar Chart
+        // --------------------------------------------------------------------
+        const totalRevenueChartEl = document.querySelector('#totalRevenueChart'),
+            totalRevenueChartOptions = {
+                series: [
+                    {
+                        name: '2021',
+                        data: [18, 7, 15, 29, 18, 12, 9]
+                    },
+                    {
+                        name: '2020',
+                        data: [-13, -18, -9, -14, -5, -17, -15]
+                    }
+                ],
+                chart: {
+                    height: 300,
+                    stacked: true,
+                    type: 'bar',
+                    toolbar: {show: false}
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '33%',
+                        borderRadius: 12,
+                        startingShape: 'rounded',
+                        endingShape: 'rounded'
+                    }
+                },
+                colors: [config.colors.primary, config.colors.info],
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 6,
+                    lineCap: 'round',
+                    colors: [cardColor]
+                },
+                legend: {
+                    show: true,
+                    horizontalAlign: 'left',
+                    position: 'top',
+                    markers: {
+                        height: 8,
+                        width: 8,
+                        radius: 12,
+                        offsetX: -3
+                    },
+                    labels: {
+                        colors: axisColor
+                    },
+                    itemMargin: {
+                        horizontal: 10
+                    }
+                },
+                grid: {
+                    borderColor: borderColor,
+                    padding: {
+                        top: 0,
+                        bottom: -8,
+                        left: 20,
+                        right: 20
+                    }
+                },
+                xaxis: {
+                    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    labels: {
+                        style: {
+                            fontSize: '13px',
+                            colors: axisColor
+                        }
+                    },
+                    axisTicks: {
+                        show: false
+                    },
+                    axisBorder: {
+                        show: false
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            fontSize: '13px',
+                            colors: axisColor
+                        }
+                    }
+                },
+                responsive: [
+                    {
+                        breakpoint: 1700,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 10,
+                                    columnWidth: '32%'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        breakpoint: 1580,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 10,
+                                    columnWidth: '35%'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        breakpoint: 1440,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 10,
+                                    columnWidth: '42%'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        breakpoint: 1300,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 10,
+                                    columnWidth: '48%'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        breakpoint: 1200,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 10,
+                                    columnWidth: '40%'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        breakpoint: 1040,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 11,
+                                    columnWidth: '48%'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        breakpoint: 991,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 10,
+                                    columnWidth: '30%'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        breakpoint: 840,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 10,
+                                    columnWidth: '35%'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        breakpoint: 768,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 10,
+                                    columnWidth: '28%'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        breakpoint: 640,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 10,
+                                    columnWidth: '32%'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        breakpoint: 576,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 10,
+                                    columnWidth: '37%'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        breakpoint: 480,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 10,
+                                    columnWidth: '45%'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        breakpoint: 420,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 10,
+                                    columnWidth: '52%'
+                                }
+                            }
+                        }
+                    },
+                    {
+                        breakpoint: 380,
+                        options: {
+                            plotOptions: {
+                                bar: {
+                                    borderRadius: 10,
+                                    columnWidth: '60%'
+                                }
+                            }
+                        }
+                    }
+                ],
+                states: {
+                    hover: {
+                        filter: {
+                            type: 'none'
+                        }
+                    },
+                    active: {
+                        filter: {
+                            type: 'none'
+                        }
+                    }
+                }
+            };
+        if (typeof totalRevenueChartEl !== undefined && totalRevenueChartEl !== null) {
+            const totalRevenueChart = new ApexCharts(totalRevenueChartEl, totalRevenueChartOptions);
+            totalRevenueChart.render();
+        }
+
+        // Growth Chart - Radial Bar Chart
+        // --------------------------------------------------------------------
+        const growthChartEl = document.querySelector('#growthChart'),
+            growthChartOptions = {
+                series: [78],
+                labels: ['Growth'],
+                chart: {
+                    height: 240,
+                    type: 'radialBar'
+                },
+                plotOptions: {
+                    radialBar: {
+                        size: 150,
+                        offsetY: 10,
+                        startAngle: -150,
+                        endAngle: 150,
+                        hollow: {
+                            size: '55%'
+                        },
+                        track: {
+                            background: cardColor,
+                            strokeWidth: '100%'
+                        },
+                        dataLabels: {
+                            name: {
+                                offsetY: 15,
+                                color: headingColor,
+                                fontSize: '15px',
+                                fontWeight: '600',
+                                fontFamily: 'Public Sans'
+                            },
+                            value: {
+                                offsetY: -25,
+                                color: headingColor,
+                                fontSize: '22px',
+                                fontWeight: '500',
+                                fontFamily: 'Public Sans'
+                            }
+                        }
+                    }
+                },
+                colors: [config.colors.primary],
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shade: 'dark',
+                        shadeIntensity: 0.5,
+                        gradientToColors: [config.colors.primary],
+                        inverseColors: true,
+                        opacityFrom: 1,
+                        opacityTo: 0.6,
+                        stops: [30, 70, 100]
+                    }
+                },
+                stroke: {
+                    dashArray: 5
+                },
+                grid: {
+                    padding: {
+                        top: -35,
+                        bottom: -10
+                    }
+                },
+                states: {
+                    hover: {
+                        filter: {
+                            type: 'none'
+                        }
+                    },
+                    active: {
+                        filter: {
+                            type: 'none'
+                        }
+                    }
+                }
+            };
+        if (typeof growthChartEl !== undefined && growthChartEl !== null) {
+            const growthChart = new ApexCharts(growthChartEl, growthChartOptions);
+            growthChart.render();
+        }
+
+        // Profit Report Line Chart
+        // --------------------------------------------------------------------
+        const profileReportChartEl = document.querySelector('#profileReportChart'),
+            profileReportChartConfig = {
+                chart: {
+                    height: 80,
+                    // width: 175,
+                    type: 'line',
+                    toolbar: {
+                        show: false
+                    },
+                    dropShadow: {
+                        enabled: true,
+                        top: 10,
+                        left: 5,
+                        blur: 3,
+                        color: config.colors.warning,
+                        opacity: 0.15
+                    },
+                    sparkline: {
+                        enabled: true
+                    }
+                },
+                grid: {
+                    show: false,
+                    padding: {
+                        right: 8
+                    }
+                },
+                colors: [config.colors.warning],
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    width: 5,
+                    curve: 'smooth'
+                },
+                series: [
+                    {
+                        data: [110, 270, 145, 245, 205, 285]
+                    }
+                ],
+                xaxis: {
+                    show: false,
+                    lines: {
+                        show: false
+                    },
+                    labels: {
+                        show: false
+                    },
+                    axisBorder: {
+                        show: false
+                    }
+                },
+                yaxis: {
+                    show: false
+                }
+            };
+        if (typeof profileReportChartEl !== undefined && profileReportChartEl !== null) {
+            const profileReportChart = new ApexCharts(profileReportChartEl, profileReportChartConfig);
+            profileReportChart.render();
+        }
+
+        // Order Statistics Chart
+        // --------------------------------------------------------------------
+        const chartOrderStatistics = document.querySelector('#orderStatisticsChart'),
+            orderChartConfig = {
+                chart: {
+                    height: 165,
+                    width: 130,
+                    type: 'donut'
+                },
+
+                labels: {{ labels|safe }},
+                series:{{ data|safe }},
+
+
+                colors: [config.colors.primary, config.colors.secondary, config.colors.info, config.colors.success],
+                stroke: {
+                    width: 5,
+                    colors: cardColor
+                },
+                dataLabels: {
+                    enabled: false,
+                    formatter: function (val, opt) {
+                        return parseInt(val) + '%';
+                    }
+                },
+                legend: {
+                    show: false
+                },
+                grid: {
+                    padding: {
+                        top: 0,
+                        bottom: 0,
+                        right: 15
+                    }
+                },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '75%',
+                            labels: {
+                                show: true,
+                                value: {
+                                    fontSize: '1.5rem',
+                                    fontFamily: 'Public Sans',
+                                    color: headingColor,
+                                    offsetY: -15,
+                                    formatter: function (val) {
+                                        return parseInt(val) + '%';
+                                    }
+                                },
+                                name: {
+                                    offsetY: 20,
+                                    fontFamily: 'Public Sans'
+                                },
+                                total: {
+                                    show: true,
+                                    fontSize: '0.8125rem',
+                                    color: axisColor,
+                                    label: 'Weekly',
+                                    formatter: function (w) {
+                                        return '38%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+        if (typeof chartOrderStatistics !== undefined && chartOrderStatistics !== null) {
+            const statisticsChart = new ApexCharts(chartOrderStatistics, orderChartConfig);
+            statisticsChart.render();
+        }
+
+        // Income Chart - Area chart
+        // --------------------------------------------------------------------
+        const incomeChartEl = document.querySelector('#incomeChart'),
+            incomeChartConfig = {
+                series: [
+                    {
+                        data: [24, 21, 30, 22, 42, 26, 35, 29]
+                    }
+                ],
+                chart: {
+                    height: 215,
+                    parentHeightOffset: 0,
+                    parentWidthOffset: 0,
+                    toolbar: {
+                        show: false
+                    },
+                    type: 'area'
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    width: 2,
+                    curve: 'smooth'
+                },
+                legend: {
+                    show: false
+                },
+                markers: {
+                    size: 6,
+                    colors: 'transparent',
+                    strokeColors: 'transparent',
+                    strokeWidth: 4,
+                    discrete: [
+                        {
+                            fillColor: config.colors.white,
+                            seriesIndex: 0,
+                            dataPointIndex: 7,
+                            strokeColor: config.colors.primary,
+                            strokeWidth: 2,
+                            size: 6,
+                            radius: 8
+                        }
+                    ],
+                    hover: {
+                        size: 7
+                    }
+                },
+                colors: [config.colors.primary],
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shade: shadeColor,
+                        shadeIntensity: 0.6,
+                        opacityFrom: 0.5,
+                        opacityTo: 0.25,
+                        stops: [0, 95, 100]
+                    }
+                },
+                grid: {
+                    borderColor: borderColor,
+                    strokeDashArray: 3,
+                    padding: {
+                        top: -20,
+                        bottom: -8,
+                        left: -10,
+                        right: 8
+                    }
+                },
+                xaxis: {
+                    categories: ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+                    axisBorder: {
+                        show: false
+                    },
+                    axisTicks: {
+                        show: false
+                    },
+                    labels: {
+                        show: true,
+                        style: {
+                            fontSize: '13px',
+                            colors: axisColor
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        show: false
+                    },
+                    min: 10,
+                    max: 50,
+                    tickAmount: 4
+                }
+            };
+        if (typeof incomeChartEl !== undefined && incomeChartEl !== null) {
+            const incomeChart = new ApexCharts(incomeChartEl, incomeChartConfig);
+            incomeChart.render();
+        }
+
+        // Expenses Mini Chart - Radial Chart
+        // --------------------------------------------------------------------
+        const weeklyExpensesEl = document.querySelector('#expensesOfWeek'),
+            weeklyExpensesConfig = {
+                series: [65],
+                chart: {
+                    width: 60,
+                    height: 60,
+                    type: 'radialBar'
+                },
+                plotOptions: {
+                    radialBar: {
+                        startAngle: 0,
+                        endAngle: 360,
+                        strokeWidth: '8',
+                        hollow: {
+                            margin: 2,
+                            size: '45%'
+                        },
+                        track: {
+                            strokeWidth: '50%',
+                            background: borderColor
+                        },
+                        dataLabels: {
+                            show: true,
+                            name: {
+                                show: false
+                            },
+                            value: {
+                                formatter: function (val) {
+                                    return '$' + parseInt(val);
+                                },
+                                offsetY: 5,
+                                color: '#697a8d',
+                                fontSize: '13px',
+                                show: true
+                            }
+                        }
+                    }
+                },
+                fill: {
+                    type: 'solid',
+                    colors: config.colors.primary
+                },
+                stroke: {
+                    lineCap: 'round'
+                },
+                grid: {
+                    padding: {
+                        top: -10,
+                        bottom: -15,
+                        left: -10,
+                        right: -10
+                    }
+                },
+                states: {
+                    hover: {
+                        filter: {
+                            type: 'none'
+                        }
+                    },
+                    active: {
+                        filter: {
+                            type: 'none'
+                        }
+                    }
+                }
+            };
+        if (typeof weeklyExpensesEl !== undefined && weeklyExpensesEl !== null) {
+            const weeklyExpenses = new ApexCharts(weeklyExpensesEl, weeklyExpensesConfig);
+            weeklyExpenses.render();
+        }
+
+        var options = {
+            chart: {
+                type: 'line'
+            },
+            series: [{
+                name: 'sales',
+                data: [30, 40, 35, 50, 49, 60, 70, 91, 125]
+            }],
+            xaxis: {
+                categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999]
+            }
+        }
+
+        var chart = new ApexCharts(document.querySelector("#chart"), options);
+
+        chart.render();
+    })();
+
+</script>
+</body>
+
+</html>

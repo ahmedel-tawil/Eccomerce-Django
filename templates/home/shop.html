@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load currency %}
+{% load cart_template_tag %}
+{% load static %}
+{% currency_context %}
+{% block body %}
+    <!-- Start Content -->
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <ul class="list-inline shop-top-menu pb-3 pt-1">
+                            <li class="list-inline-item">
+                                <a class="h3{% if category.slug == active_category %} text-gray-500 {% else %} text-info {% endif %}  text-decoration-none mr-3"
+                                   href="{% url 'shopping' %}">All</a>
+                            </li>
+                            {% for category in categories %}
+                                <li class="list-inline-item">
+                                    <a class="h3{% if category.slug == active_category %} text-gray-500 {% else %} text-info {% endif %}  text-decoration-none mr-3"
+                                       href="{% url 'shopping' %}?category={{ category.slug }} ">{{ category.name }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="row">
+                        {% include 'home/partials/product_list_items.html' %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- End Content -->
+
+        <!-- Start Brands -->
+
+    </div>
+    <!--End Brands-->
+    <section class="bg-light py-5">
+        <div class="container my-4">
+            <div class="row text-center py-3">
+                <div class="col-lg-6 m-auto">
+                    <h1 class="h1">Our Brands</h1>
+                    <p>
+                        Collection of Best Brands around the world
+                    </p>
+                </div>
+                <div class="col-lg-9 m-auto tempaltemo-carousel">
+                    <div class="row d-flex flex-row">
+                        <!--Controls-->
+                        <div class="col-1 align-self-center">
+                            <a class="h1" href="#multi-item-example" role="button" data-bs-slide="prev">
+                                <i class="text-light fas fa-chevron-left"></i>
+                            </a>
+                        </div>
+                        <!--End Controls-->
+
+                        <!--Carousel Wrapper-->
+                        <div class="col">
+                            <div class="carousel slide carousel-multi-item pt-2 pt-md-0" id="multi-item-example"
+                                 data-bs-ride="carousel">
+                                <!--Slides-->
+                                <div class="carousel-inner product-links-wap" role="listbox">
+
+                                    <!--First slide-->
+                                    <div class="carousel-item active">
+                                        <div class="row">
+                                            {% for brand in brand %}
+                                                <div class="col-3 p-md-5">
+                                                    <a href="#"><img class="img-fluid brand-img"
+                                                                     src="{{ brand.image.url }}"
+                                                                     alt="Brand Logo"></a>
+                                                </div>
+                                            {% endfor %}
+
+                                        </div>
+                                    </div>
+                                    <!--End First slide-->
+
+
+                                </div>
+                                <!--End Slides-->
+                            </div>
+                        </div>
+                        <!--End Carousel Wrapper-->
+
+                        <!--Controls-->
+                        <div class="col-1 align-self-center">
+                            <a class="h1" href="#multi-item-example" role="button" data-bs-slide="next">
+                                <i class="text-light fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                        <!--End Controls-->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+
+{% endblock %}
+
+
+{#                    <div class="col-md-6 pb-4">#}
+{#                        <div class="d-flex">#}
+{#                            <form action="" method="get" class="form-inline justify-content-center">#}
+{#                                {{ filter.form }}#}
+{#                                <input class="btn btn-success" type="submit"/>#}
+{#                            </form>#}
+{#                            <select class="form-control">#}
+{#                                <option>Featured</option>#}
+{#                                <option>A to Z</option>#}
+{#                                <option>Item</option>#}
+{#                            </select>#}
+{#                        </div>#}
+{#                    </div>#}
+
+
+{#{% if is_paginated %}#}
+{#    <div class="row">#}
+{#        <nav class="d-flex wow fadeIn">#}
+{#            <ul class="pagination pagination-lg justify-content-center">#}
+{#                {% if page_obj.has_previous %}#}
+{#                    <li class="page-item">#}
+{#                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}"#}
+{#                           aria-label="Previous">#}
+{#                            <span aria-hidden="true">&laquo;</span>#}
+{#                            <span class="sr-only">Previous</span>#}
+{#                        </a>#}
+{#                    </li>#}
+{#                {% endif %}#}
+{##}
+{#                <li class="page-item active">#}
+{#                    <a class="page-link rounded-0 mr-3 shadow-sm border-top-0 border-left-0 text-dark"#}
+{#                       href="?page={{ page_obj.number }}">{{ page_obj.number }}#}
+{#                        <span class="sr-only">(current)</span>#}
+{#                    </a>#}
+{#                </li>#}
+{##}
+{#                {% if page_obj.has_next %}#}
+{#                    <li class="page-item">#}
+{#                        <a class="page-link rounded-0 mr-3 shadow-sm border-top-0 border-left-0 text-dark"#}
+{#                           href="?page={{ page_obj.next_page_number }}"#}
+{#                           aria-label="Next">#}
+{#                            <span aria-hidden="true">&raquo;</span>#}
+{#                            <span class="sr-only">Next</span>#}
+{#                        </a>#}
+{#                    </li>#}
+{#                {% endif %}#}
+{#            </ul>#}
+{#        </nav>#}
+{#    </div>#}
+{#{% endif %}#}

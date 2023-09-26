@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load currency %}
+
+{% block body %}
+    <main>
+        <div class="container">
+
+            <div class="table-responsive text-nowrap">
+                <h2>Order Summary</h2>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Item title</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Size</th>
+                        <th scope="col"></th>
+                        <th scope="col">Total Item Price</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for order_item in object.items.all %}
+                        {% include 'home/partials/cart_item.html' %}
+                    {% empty %}
+                        <tr>
+                            <td colspan='5'>Your cart is empty</td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">
+                                <a class='btn btn-primary float-right' href='{% url 'shopping' %}'>Continue shopping</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    {% if object.coupon %}
+                        <tr>
+                            <td colspan="4"><b>Coupon</b></td>
+                            <td><b>
+                                {{ object.coupon.amount |currency:request.session.currency }} {{ request.session.currency }}</b>
+                            </td>
+                        </tr>
+                    {% endif %}
+                    {% if object.get_total %}
+                        <tr>
+                            <td colspan="4"><b>Order Total</b></td>
+                            <td><b>
+                                {{ object.get_total |currency:request.session.currency }} {{ request.session.currency }}</b>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5">
+                                <a class='btn btn-warning float-right ml-2' href='{% url 'checkout' %}'>Proceed to
+                                    checkout</a>
+                                <a class='btn btn-primary float-right' href='{% url 'shopping' %}'>Continue shopping</a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </main>
+
+{% endblock body %}

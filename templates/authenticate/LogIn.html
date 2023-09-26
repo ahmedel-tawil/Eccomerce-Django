@@ -1,0 +1,59 @@
+{% extends 'authenticate/auth_base.html' %}
+{% load static %}
+
+
+{% block body %}
+
+    <form class="login100-form validate-form" method="POST">
+        {% csrf_token %}
+        <span class="login100-form-title p-b-26">
+						Welcome
+					</span>
+        <span class="login100-form-title p-b-48">
+						<img src="{{ company.logo.url }}">
+					</span>
+
+        <div class="wrap-input100 validate-input">
+            <input type="email" class="input100 form-control form-control-user" name="email"
+                   aria-describedby="emailHelp">
+            <span class="focus-input100" data-placeholder="Email"></span>
+        </div>
+
+        <div class="wrap-input100 validate-input" data-validate="Enter password">
+						<span class="btn-show-pass">
+							<i class="zmdi zmdi-eye"></i>
+						</span>
+            <input type="password" class="input100 form-control form-control-user"
+                   name="password">
+            <span class="focus-input100" data-placeholder="Password"></span>
+        </div>
+
+        <div class="container-login100-form-btn">
+            <div class="wrap-login100-form-btn">
+                <div class="login100-form-bgbtn"></div>
+                <button class="login100-form-btn">
+                    Login
+                </button>
+            </div>
+        </div>
+
+        <hr>
+        {#                <a href="index.html" class="btn btn-google btn-user btn-block">#}
+        {#                    <i class="fab fa-google fa-fw"></i> Login with Google#}
+        {#                </a>#}
+        {#                <a href="index.html" class="btn btn-facebook btn-user btn-block">#}
+        {#                    <i class="fab fa-facebook-f fa-fw"></i> Login with Facebook#}
+        {#                </a>#}
+
+        <div class="text-center p-t-115">
+						<span class="txt1">
+							Don’t have an account?
+						</span>
+            <a class="txt2" href="{% url 'sign-up' %}">
+                Sign Up
+            </a>
+        </div>
+
+
+    </form>
+{% endblock body %}

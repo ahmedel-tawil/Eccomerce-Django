@@ -1,0 +1,29 @@
+{% load currency %}
+<tr>
+    <th scope="row">{{ forloop.counter }}</th>
+    <td>{{ order_item.product.name }}</td>
+    <td>{{ order_item.price|currency:request.session.currency }}{{ request.session.currency }}</td>
+    <td>{{ order_item.quantity }}</td>
+    <td>{{ order_item.size.size.title }}{{ order_item.size.size.unit }}</td>
+    <td>
+        <a class="list-inline-item"
+           href="{% url 'remove-single-item-from-cart' order_item.id %}"><span
+                class="btn btn-primary">-</span></a>
+        <a class="list-inline-item"><span class="badge bg-secondary"
+                                          style="width: 50px">{{ order_item.quantity }}</span></a>
+        <a class="list-inline-item"
+           href="{% url 'update_to-cart' order_item.id %}"><span
+                class="btn btn-primary">+</span></a>
+    </td>
+    <td>
+        {% if order_item.item.discount_price %}
+            {{ order_item.get_total_discount_item_price }}
+            <span class="badge badge-primary">Saving ${{ order_item.get_amount_saved }}</span>
+        {% else %}
+            {{ order_item.get_total_item_price|currency:request.session.currency }}{{ request.session.currency }}
+        {% endif %}
+        <a style='color: red;' href="{% url 'remove-from-cart' order_item.id %}">
+            <i class="fas fa-trash-alt float-right" style="font-size:20px"> </i>
+        </a>
+    </td>
+</tr>

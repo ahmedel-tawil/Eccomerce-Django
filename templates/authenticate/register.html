@@ -1,0 +1,77 @@
+{% extends 'authenticate/auth_base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+
+{% block body %}
+
+    <form lass="login100-form validate-form" method="POST">
+        {% csrf_token %}
+        <span class="login100-form-title p-b-26">
+						Welcome
+					</span>
+        <span class="login100-form-title p-b-48">
+						<img src="{{ company.logo.url }}">
+					</span>
+        <div class="wrap-input100 validate-input">
+            <input type="text" class="form-control form-control-user" name="name"
+                   placeholder="user name" required/>
+        </div>
+        <div class="wrap-input100 validate-input">
+            <input type="email" class="form-control form-control-user" name="Email"
+                   placeholder="Email Address" required/>
+        </div>
+
+
+        <div class="wrap-input100 validate-input">
+            <input type="number" class="form-control form-control-user" name="MobileNumber"
+                   placeholder="Mobile Number" required/>
+        </div>
+
+
+        <div class="wrap-input100 validate-input">
+            <input type="password" class="form-control form-control-user" name="Password"
+                   placeholder="Password" required/>
+        </div>
+
+        <div class="wrap-input100 validate-input">
+            <input type="password" class="form-control form-control-user" name="RepeatPassword"
+                   placeholder="Repeat Password" required/>
+        </div>
+
+        <br/>
+
+        <div class="container-login100-form-btn">
+            <div class="wrap-login100-form-btn">
+                <div class="login100-form-bgbtn"></div>
+                <button type="submit" class="login100-form-btn">
+                    Create
+                </button>
+            </div>
+        </div>
+
+
+        <hr/>
+        {#        <a href="index.html" class="btn btn-google btn-user btn-block">#}
+        {#            <i class="fab fa-google fa-fw"></i> Register with Google#}
+        {#        </a>#}
+        {#        <a href="index.html" class="btn btn-facebook btn-user btn-block">#}
+        {#            <i class="fab fa-facebook-f fa-fw"></i> Register with#}
+        {#            Facebook#}
+        {#        </a>#}
+    </form>
+
+
+    <div class="text-center p-t-20">
+        <span class="txt1">Already have an account?</span>
+        <a class="txt2" href="{% url 'sign-in' %}"> Login in</a>
+    </div>
+    <div class="text-center p-t-20">
+						<span class="txt1">
+                            Forgot Password?
+                        </span>
+        <a class="txt2" href="#"> Reset Password
+        </a>
+    </div>
+{% endblock body %}

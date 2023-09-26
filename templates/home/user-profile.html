@@ -1,0 +1,392 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+    <!-- Button trigger modal -->
+
+    <section class="vh-100" style="background-color: #eee;">
+        <div class="container  table-responsive py-5 h-100">
+            <div class="d-flex align-items-start">
+                <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <button class="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill"
+                            data-bs-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home"
+                            aria-selected="true">My Orders
+                    </button>
+                    <button class="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill"
+                            data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile"
+                            aria-selected="false">My Favourite
+                    </button>
+                    <button class="nav-link" id="v-pills-settings-tab" data-bs-toggle="pill"
+                            data-bs-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings"
+                            aria-selected="false">Settings
+                    </button>
+                </div>
+                <div class="tab-content" id="v-pills-tabContent" style="width: 1000px">
+                    <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel"
+                         aria-labelledby="v-pills-home-tab" tabindex="0">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th scope="col"># order</th>
+                                    <th scope="col"> Date</th>
+                                    <th scope="col">amount</th>
+                                    <th scope="col">Invoice</th>
+                                    <th scope="col">Track</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for order in orders %}
+                                    <tr>
+                                        <th scope="row">{{ order.id }}</th>
+                                        <td>{{ order.ordered_date|date }}</td>
+                                        <td>{{ order.get_total }}
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                                    data-bs-target="#invoiceModal{{ order.id }}">
+                                                Invoice
+                                            </button>
+
+                                            <div class="modal fade" id="invoiceModal{{ order.id }}" tabindex="-1"
+                                                 aria-labelledby="exampleModalLabel"
+                                                 aria-hidden="true">
+                                                <div class="modal-dialog modal-fullscreen">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h1 class="modal-title fs-5"
+                                                                id="exampleModalLabel">{{ order.slug }}</h1>
+                                                            <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal"
+                                                                    aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="modal-body text-start px-4 pt-0 pb-4">
+                                                                <div class="offset-xl-2 col-xl-8 col-lg-12 col-md-12 col-sm-12 col-12 padding">
+                                                                    <div class="card">
+                                                                        <div class="card-header p-4">
+                                                                            <a class="pt-2 d-inline-block"
+                                                                               href="{% url 'landing' %}"
+                                                                               data-abc="true"><img
+                                                                                    src="{{ company.logo.url }} "
+                                                                                    width="20%" alt="img"></a>
+                                                                            <div class="float-right">
+                                                                                <h3 class="mb-0">Invoice
+                                                                                    #{{ order.slug }}</h3>
+                                                                                <h6 class="mb-0">Ref
+                                                                                    #{{ order.ref_code }}</h6>
+                                                                                Date: {{ order.ordered_date.date }}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="card-body">
+                                                                            <div class="row mb-4">
+                                                                                <div class="col-sm-6">
+                                                                                    <h5 class="mb-3">From:</h5>
+                                                                                    <h3 class="text-dark mb-1">{{ company.name }}
+                                                                                    </h3>
+                                                                                    <div>{{ company.address }}</div>
+                                                                                    <div>Email:
+                                                                                        {{ company.email }}
+                                                                                    </div>
+                                                                                    <div>{{ compnay.phone_number }}</div>
+                                                                                </div>
+                                                                                <div class="col-sm-6 ">
+                                                                                    <h5 class="mb-3">To:</h5>
+                                                                                    <h3 class="text-dark mb-1">{{ order.user.name }}</h3>
+                                                                                    <div>
+                                                                                        {{ order.billing_address.apartment_address }}{{ order.billing_address.street_address }} </div>
+                                                                                    <div>
+                                                                                        {{ order.billing_address.country }}{{ order.billing_address.zip }} </div>
+
+                                                                                    <div>{{ order.user.email }}</div>
+                                                                                    <div>{{ order.user.phone_number }}</div>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div class="table-responsive-sm">
+                                                                                <table class="table table-striped">
+                                                                                    <thead>
+                                                                                    <tr>
+                                                                                        <th class="center">#</th>
+                                                                                        <th>Item</th>
+                                                                                        <th>Description</th>
+                                                                                        <th class="right">Price</th>
+                                                                                        <th class="center">Qty</th>
+                                                                                        <th class="right">Total</th>
+                                                                                    </tr>
+                                                                                    </thead>
+                                                                                    <tbody>
+                                                                                    {% for item in order.items.all %}
+                                                                                        <tr>
+                                                                                            <td class="center">1</td>
+                                                                                            <td class="left strong">{{ item.product.name }}</td>
+                                                                                            <td class="left">{{ item.product.description_s }}</td>
+                                                                                            <td class="right">{{ item.price }} {{ item.currency.symbol }}</td>
+                                                                                            <td class="center">{{ item.quantity }}</td>
+                                                                                            <td class="right">{{ item.get_final_price }} {{ item.currency.symbol }}
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    {% endfor %}
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </div>
+                                                                            <div class="row">
+                                                                                <div class="col-lg-4 col-sm-5">
+                                                                                </div>
+                                                                                <div class="col-lg-4 col-sm-5 ml-auto">
+                                                                                    <table class="table table-clear">
+                                                                                        <tbody>
+                                                                                        {#                                                                                        <tr>#}
+                                                                                        {#                                                                                            <td class="left">#}
+                                                                                        {#                                                                                                <strong class="text-dark">Subtotal</strong>#}
+                                                                                        {#                                                                                            </td>#}
+                                                                                        {#                                                                                            <td class="right">#}
+                                                                                        {#                                                                                                $28,809,00#}
+                                                                                        {#                                                                                            </td>#}
+                                                                                        {#                                                                                        </tr>#}
+                                                                                        {% if order.coupon %}
+                                                                                            <tr>
+                                                                                                <td class="left">
+                                                                                                    <strong class="text-dark">Promo
+                                                                                                        code
+                                                                                                    </strong>
+                                                                                                    <small>{{ order.coupon.code }}</small>
+                                                                                                </td>
+                                                                                                <td class="right">
+                                                                                                    {{ order.coupon.amount }}
+                                                                                                </td>
+                                                                                            </tr>
+                                                                                        {% endif %}
+                                                                                        {#                                                                                        <tr>#}
+                                                                                        {#                                                                                            <td class="left">#}
+                                                                                        {#                                                                                                <strong class="text-dark">VAT#}
+                                                                                        {#                                                                                                    (10%)</strong>#}
+                                                                                        {#                                                                                            </td>#}
+                                                                                        {#                                                                                            <td class="right">#}
+                                                                                        {#                                                                                                $2,304,00#}
+                                                                                        {#                                                                                            </td>#}
+                                                                                        {#                                                                                        </tr>#}
+                                                                                        <tr>
+                                                                                            <td class="left">
+                                                                                                <strong class="text-dark">Total</strong>
+                                                                                            </td>
+                                                                                            <td class="right">
+                                                                                                <strong class="text-dark">{{ order.get_total }}</strong>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                        </tbody>
+                                                                                    </table>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="card-footer bg-white">
+                                                                            <div class="float-left">
+                                                                                <a class="text-light"
+                                                                                   href="{{ company.facebook }}"
+                                                                                   target="_blank" rel="sponsored"><i
+                                                                                        class="fab fa-facebook-f fa-sm fa-fw me-2"></i></a>
+                                                                                <a class="text-light"
+                                                                                   href="{{ company.instagram }}"
+                                                                                   target="_blank"><i
+                                                                                        class="fab fa-instagram fa-sm fa-fw me-2"></i></a>
+                                                                                <a class="text-light"
+                                                                                   href="{{ company.twitter }}"
+                                                                                   target="_blank"><i
+                                                                                        class="fab fa-twitter fa-sm fa-fw me-2"></i></a>
+                                                                                <a class="text-light"
+                                                                                   href="{{ company.linkedin }}"
+                                                                                   target="_blank"><i
+                                                                                        class="fab fa-linkedin fa-sm fa-fw"></i></a>
+                                                                            </div>
+
+                                                                            <div class="float-right">
+                                                                                {% if order.ordered %}
+                                                                                    paid at:
+                                                                                    <span class="badge rounded-pill text-bg-success">{{ order.ordered_date }}</span>
+                                                                                {% endif %}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary"
+                                                                        data-bs-dismiss="modal">Close
+                                                                </button>
+                                                                <a type="button" class="btn btn-primary"
+                                                                   href="{% url 'pdf-invoice' order.slug %}">Pdf
+                                                                </a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                                    data-bs-target="#exampleModal{{ order.id }}">
+                                                track
+                                            </button>
+
+                                            <div class="modal fade" id="exampleModal{{ order.id }}" tabindex="-1"
+                                                 aria-labelledby="exampleModalLabel"
+                                                 aria-hidden="true">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h1 class="modal-title fs-5"
+                                                                id="exampleModalLabel">{{ order.slug }}</h1>
+                                                            <button type="button" class="btn-close"
+                                                                    data-bs-dismiss="modal"
+                                                                    aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <div class="modal-body text-start px-4 pt-0 pb-4">
+                                                                {% if order.ref_code %}
+                                                                    <div class="text-center">
+                                                                        <h5 class="mb-5">Ref
+                                                                            Number-{{ order.ref_code }}</h5>
+                                                                    </div>{% endif %}
+                                                                <div class="text-center">
+                                                                    <h5 class="mb-3">Order Status</h5>
+                                                                </div>
+
+                                                                <div class="d-flex justify-content-between mb-5">
+                                                                    <div class="text-center">
+                                                                        {% if order.ordered == True %}
+                                                                            <i class="fas fa-circle"></i>
+                                                                            <p>Order placed</p>
+                                                                        {% else %}
+                                                                            <i class="fas fa-circle"
+                                                                               style="color: #979595;"></i>
+                                                                            <p style="color: #979595;">Not
+                                                                                placed</p>
+                                                                        {% endif %}
+                                                                    </div>
+
+                                                                    {% if order.order_transit == True %}
+                                                                        <div class="text-center">
+                                                                            <i class="fas fa-circle"></i>
+                                                                            <p>Processed</p>
+                                                                        </div>
+                                                                    {% else %}
+                                                                        <div class="text-center">
+                                                                            <i class="fas fa-circle"
+                                                                               style="color: #979595;"></i>
+                                                                            <p style="color: #979595;">In
+                                                                                process</p>
+                                                                        </div>
+
+                                                                    {% endif %}
+
+                                                                    {% if order.being_delivered == True %}
+                                                                        <div class="text-center">
+                                                                            <i class="fas fa-circle"></i>
+                                                                            <p>Being Delivered </p>
+                                                                        </div>
+                                                                    {% else %}
+                                                                        <div class="text-center">
+                                                                            <i class="fas fa-circle"
+                                                                               style="color: #979595;"></i>
+                                                                            <p style="color: #979595;">Delivered</p>
+                                                                        </div>
+                                                                    {% endif %}
+
+                                                                    {% if order.received == True %}
+                                                                        <div class="text-center">
+                                                                            <i class="fas fa-circle"></i>
+                                                                            <p>Customer Received </p>
+                                                                        </div>
+                                                                    {% else %}
+                                                                        <div class="text-center">
+                                                                            <i class="fas fa-circle"
+                                                                               style="color: #979595;"></i>
+                                                                            <p style="color: #979595;">Received</p>
+                                                                        </div>
+                                                                    {% endif %}
+
+                                                                </div>
+
+                                                                <div class="row justify-content-center">
+                                                                    <div class="col-md-4 text-center">
+                                                                        <p class="lead fw-normal">Shipped with</p>
+                                                                    </div>
+                                                                    <div class="col-md-4 text-center">
+                                                                        <p class="lead fw-normal">UPS Expedited</p>
+                                                                    </div>
+                                                                    <div class="col-md-2 text-center">
+                                                                        <i class="fas fa-phone fa-lg"></i>
+                                                                    </div>
+                                                                </div>
+                                                                {% if order.delivery_date %}
+                                                                    <div class="row justify-content-center">
+                                                                        <div class="col-md-4 text-center">
+                                                                            <p class="lead fw-normal">Estimated
+                                                                                Delivery</p>
+                                                                        </div>
+                                                                        <div class="col-md-4 text-center">
+                                                                            <p class="lead fw-normal">02/12/2017</p>
+                                                                        </div>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-secondary"
+                                                                        data-bs-dismiss="modal">Close
+                                                                </button>
+                                                                <button type="button" class="btn btn-primary">Save
+                                                                    changes
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                    <div class="container tab-pane fade" id="v-pills-profile"
+                         aria-labelledby="v-pills-profile-tab" tabindex="0">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Item</th>
+                                    <th scope="col">image</th>
+                                    <th scope="col">View</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for fav_item in favourite_list %}
+                                    <tr>
+                                        <th scope="row">{{ fav_item.items.name }}</th>
+                                        <td><img src="{{ fav_item.items.main_image.url }}" width="100px"
+                                                 height="100px" alt="test"></td>
+                                        <td>
+                                            <a type="button" href="{% url 'product-det' fav_item.items.slug %}"
+                                               class="btn btn-primary">
+                                                view
+                                            </a>
+
+                                            <a style='color: red;' href="{% url 'remove_from_favourite' fav_item.id %}">
+                                                <i class="fas fa-trash-alt float-right" style="font-size:20px"> </i>
+                                            </a>
+
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+{% endblock %}

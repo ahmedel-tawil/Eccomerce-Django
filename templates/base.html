@@ -1,0 +1,550 @@
+{% load jazzmin %}
+{% load analytical %}
+{% load google_analytics_gtag %}
+{% load i18n %}
+{% load static %}
+{% load cache %}
+{% load cart_template_tag %}
+{% load favourite_template_tag %}
+{% load currency %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+
+    <!-- SEO Meta Tags Start -->
+    <meta name="author" content="360CDM">
+    <meta property="og:title" content="Ecommrce"/>
+    <meta name="description" content="to add content here.">
+    <meta name="keywords"
+          content="sales, ecommerce, products, orders, invoices, expense, purchase, report, return, damage, sales, service, stock, suppliers">
+    <link rel="canonical" href="">
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="">
+    <meta property="og:site_name" content="django e-commerce website"/>
+    <!-- SEO Meta Tags End -->
+
+    <!-- Favicon Icon Start -->
+    <link rel="icon" href="{{ company.logo.url }}" sizes="32x32" type="image/png">
+    <!-- Favicon Icon End -->
+    <title>{% block title %} {{ company.name }} {% endblock title %}</title>
+    {% block extra_head %}
+    {% endblock %}
+
+    <!-- Fontawesome CDN -->
+    <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css"/>
+    <!-- Google Font CDN -->
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet"/>
+    <!-- Tailwind CDN -->
+    {#    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet"/>#}
+    <!-- React CDN -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Custom styles for this template-->
+    <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet"/>
+
+    <!-- Additional asteriskStyle  -->
+    <link href="{% static 'css/asteriskStyle.css' %}" rel="stylesheet">
+
+    <!-- fonts style -->
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,700|Raleway:400,700&display=swap" rel="stylesheet">
+
+    <link rel="apple-touch-icon" href="{% static 'img/apple-icon.png' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/logo.ico' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="{% static 'css/templatemo.css' %}">
+    <!-- Load fonts style after rendering the layout styles -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;200;300;400;500;700;900&display=swap">
+    <link rel="stylesheet" href="{% static 'css/fontawesome.min.css' %}">
+
+
+</head>
+<body id="landingpage">
+<div>
+    <!-- Start Top Nav -->
+    <nav class="navbar navbar-expand-lg bg-dark navbar-light d-none d-lg-block" id="templatemo_nav_top">
+        <div class="container text-light">
+            <div class="w-100 d-flex justify-content-between">
+                <div>
+
+                    <form id="currency_switcher" method="POST" action="{% url 'selectcurrency' %}">
+                        {% csrf_token %}
+                        <select name="currency" onchange="submit()">
+                            {% for curr in CURRENCIES %}
+                                <option value="{{ curr.code }}"
+                                        {% if curr.code  == request.session.currency %}selected="selected"{% endif %}>
+                                    {{ curr.symbol }} {{ curr.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <noscript>
+                            <input type="submit" value="Set"/>
+                        </noscript>
+                        <i class="fa fa-envelope mx-2"></i>
+                        <a class="navbar-sm-brand text-light text-decoration-none"
+                           href="mailto:{{ company.email }}">{{ company.email }}</a>
+                        <i class="fa fa-phone mx-2"></i>
+                        <a class="navbar-sm-brand text-light text-decoration-none"
+                           href="tel:{{ company.phone_number }}">{{ company.phone_number }}</a>
+                </div>
+                <div>
+                    <a class="text-light" href="{{ company.facebook }}" target="_blank" rel="sponsored"><i
+                            class="fab fa-facebook-f fa-sm fa-fw me-2"></i></a>
+                    <a class="text-light" href="{{ company.instagram }}" target="_blank"><i
+                            class="fab fa-instagram fa-sm fa-fw me-2"></i></a>
+                    <a class="text-light" href="{{ company.twitter }}" target="_blank"><i
+                            class="fab fa-twitter fa-sm fa-fw me-2"></i></a>
+                    <a class="text-light" href="{{ company.linkedin }}" target="_blank"><i
+                            class="fab fa-linkedin fa-sm fa-fw"></i></a>
+                </div>
+            </div>
+            {##}
+            {#            <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">#}
+            {#                <ul class="nav navbar-nav navbar-right">#}
+            {#                    {% with dropdown_extra_class="collapsed-nav" %}#}
+            {#                        {% include 'currencies/navbar.html' %}#}
+            {#                    {% endwith %}#}
+            {#                </ul>#}
+            {#            </div>#}
+        </div>
+
+
+    </nav>
+
+    <!-- Close Top Nav -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow">
+        <div class="container d-flex justify-content-between align-items-center">
+
+            <a class="navbar-brand text-success logo h1 align-self-center" href="{% url 'landing' %}">
+                <img src="{{ company.logo.url }}" width="70px" height="70">
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="align-self-center collapse navbar-collapse flex-fill  d-lg-flex justify-content-lg-between"
+                 id="templatemo_main_nav">
+                <div class="flex-fill">
+                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'landing' %}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'shopping' %}">Shop</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Contact</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="navbar align-self-center d-flex">
+                    <div class="d-lg-none flex-sm-fill mt-3 mb-4 col-7 col-sm-auto pr-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="inputMobileSearch" placeholder="Search ...">
+                            <div class="input-group-text">
+                                <i class="fa fa-fw fa-search"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <a class="nav-icon d-none d-lg-inline" href="#" data-bs-toggle="modal"
+                       data-bs-target="#templatemo_search">
+                        <i class="fa fa-fw fa-search text-dark mr-2"></i>
+                    </a>
+                    {% if request.user.is_authenticated %}
+                        <a class="nav-icon position-relative text-decoration-none" type="button"
+                           data-bs-toggle="offcanvas"
+                           data-bs-target="#offcanvasRight" aria-controls="offcanvasRight"
+                           href="{% url 'order-summary' %}">
+                            <i class="fa fa-fw fa-cart-arrow-down text-dark mr-1"></i>
+                            <span class="position-absolute top-0 left-100 translate-middle badge rounded-pill bg-light text-dark">{{ request.user|cart_item_count }}</span>
+                        </a>
+
+                        <a class="nav-icon position-relative text-decoration-none" type="button"
+                           data-bs-toggle="offcanvas"
+                           data-bs-target="#offcanvasRightfav" aria-controls="offcanvasRight"
+                           href="{% url 'order-summary' %}">
+                            <i class="fa fa-heart text-dark mr-1"></i>
+                            <span class="position-absolute top-0 left-100 translate-middle badge rounded-pill bg-light text-dark">{{ request.user|favourite_item_count }}</span>
+                        </a>
+
+                        <a class="nav-icon position-relative text-decoration-none"
+                           href="{% url 'user-profile' request.user.slug %}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                 class="bi bi-person-circle" viewBox="0 0 16 16">
+                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"></path>
+                                <path fill-rule="evenodd"
+                                      d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"></path>
+                            </svg>
+                        </a>
+
+                        <a class="nav-icon position-relative text-decoration-none" href="{% url 'sign-out' %}">
+                            Log out
+                        </a>
+
+                    {% else %}
+                        {% include 'home/cart/menu_cart.html' %}
+                        <a class="nav-icon position-relative text-decoration-none" href="{% url 'sign-in' %}">
+                            Log in
+                        </a>
+                    {% endif %}
+                </div>
+
+
+            </div>
+
+        </div>
+    </nav>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+        <div class="offcanvas-header">
+
+            <a type="button" href='{% url 'order-summary' %}' class="btn-file" style="float: left">
+                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="black"
+                     class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                          d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"></path>
+                    <path fill-rule="evenodd"
+                          d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"></path>
+                </svg>
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        {% include "home/cart-snippet.html" %}
+
+    </div>
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRightfav" aria-labelledby="offcanvasRightLabel">
+        <div class="offcanvas-header">
+
+            <a type="button" href='{% url 'order-summary' %}' class="btn-file" style="float: left">
+                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="black"
+                     class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                          d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"></path>
+                    <path fill-rule="evenodd"
+                          d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"></path>
+                </svg>
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        {% include "home/favourite-snippet.html" %}
+
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade bg-white" id="templatemo_search" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="w-100 pt-1 mb-5 text-right">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{% url 'shopping' %}" method="get" class="modal-content modal-body border-0 p-0">
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" id="inputModalSearch" name="query" placeholder="Search ...">
+                    <button type="submit" class="input-group-text btn-info text-light">
+                        <i class="fa fa-fw fa-search text-white"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% block body %}
+
+    {% endblock body %}
+</div>
+
+<footer class="bg-dark" id="tempaltemo_footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 pt-5">
+                <h2 class="h2 text-success border-bottom pb-3 border-light logo"><img src="{{ company.logo.url }}"
+                                                                                      width="100px" height="100px"></h2>
+                <ul class="list-unstyled text-light footer-link-list">
+                    <li>
+                        <i class="fas fa-map-marker-alt fa-fw"></i>
+                        {{ company.address }}
+                    </li>
+                    <li>
+                        <i class="fa fa-phone fa-fw"></i>
+                        <a class="text-decoration-none"
+                           href="tel:{{ company.phone_number }}">{{ company.phone_number }}</a>
+                    </li>
+                    <li>
+                        <i class="fa fa-envelope fa-fw"></i>
+                        <a class="text-decoration-none" href="mailto:{{ company.email }}">{{ company.email }}</a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-md-4 pt-5">
+                <h2 class="h2 text-light border-bottom pb-3 border-light">Products</h2>
+                <ul class="list-unstyled text-light footer-link-list">
+                    <li><a class="text-decoration-none" href="#">Luxury</a></li>
+                    <li><a class="text-decoration-none" href="#">Sport Wear</a></li>
+                    <li><a class="text-decoration-none" href="#">Men's Shoes</a></li>
+                    <li><a class="text-decoration-none" href="#">Women's Shoes</a></li>
+                    <li><a class="text-decoration-none" href="#">Popular Dress</a></li>
+                    <li><a class="text-decoration-none" href="#">Gym Accessories</a></li>
+                    <li><a class="text-decoration-none" href="#">Sport Shoes</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4 pt-5">
+                <h2 class="h2 text-light border-bottom pb-3 border-light">Further Info</h2>
+                <ul class="list-unstyled text-light footer-link-list">
+                    <li><a class="text-decoration-none" href="#">Home</a></li>
+                    <li><a class="text-decoration-none" href="#">About Us</a></li>
+                    <li><a class="text-decoration-none" href="#">Shop Locations</a></li>
+                    <li><a class="text-decoration-none" href="#">FAQs</a></li>
+                    <li><a class="text-decoration-none" href="#">Contact</a></li>
+                </ul>
+            </div>
+
+        </div>
+
+        <div class="row text-light mb-4">
+            <div class="col-12 mb-3">
+                <div class="w-100 my-3 border-top border-light"></div>
+            </div>
+            <div class="col-auto me-auto">
+                <ul class="list-inline text-left footer-icons">
+                    <li class="list-inline-item border border-light rounded-circle text-center">
+                        <a class="text-light text-decoration-none" target="_blank" href="{{ company.facebook }}"><i
+                                class="fab fa-facebook-f fa-lg fa-fw"></i></a>
+                    </li>
+                    <li class="list-inline-item border border-light rounded-circle text-center">
+                        <a class="text-light text-decoration-none" target="_blank" href="{{ company.instagram }}"><i
+                                class="fab fa-instagram fa-lg fa-fw"></i></a>
+                    </li>
+                    <li class="list-inline-item border border-light rounded-circle text-center">
+                        <a class="text-light text-decoration-none" target="_blank" href="{{ company.twitter }}"><i
+                                class="fab fa-twitter fa-lg fa-fw"></i></a>
+                    </li>
+                    <li class="list-inline-item border border-light rounded-circle text-center">
+                        <a class="text-light text-decoration-none" target="_blank" href="{{ company.linkedin }}"><i
+                                class="fab fa-linkedin fa-lg fa-fw"></i></a>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-auto">
+                <label class="sr-only" for="subscribeEmail">Email address</label>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control bg-dark border-light" id="subscribeEmail"
+                           placeholder="Email address">
+                    <div class="input-group-text btn-success text-light">Subscribe</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-100 bg-black py-3">
+        <div class="container">
+            <div class="row pt-2">
+                <div class="col-12">
+                    <p class="text-left text-light">
+                        Copyright &copy; 2021 {{ company.name }}
+                    </p>
+                    <p class="text-right text-light">{{ location_country }}, {{ location_city }}
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</footer>
+
+<script src="{% static 'js/jquery-1.11.0.min.js' %}"></script>
+<script src="{% static 'js/jquery-migrate-1.2.1.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/templatemo.js' %}"></script>
+<script src="{% static 'js/slick.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+        integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"
+        integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V"
+        crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+{##}
+{#{% if messages %}#}
+{#    <script>#}
+{#        {% for message in messages %}#}
+{#            $(document).ready(function () {#}
+{#                $('.toast').toast('show');#}
+{#            });#}
+{#            console.log('Ahmed')#}
+{#        {% endfor %}#}
+{#    </script>#}
+{#{% endif %}#}
+
+<script>
+    $('#carousel-related-product').slick({
+        infinite: true,
+        arrows: false,
+        slidesToShow: 4,
+        slidesToScroll: 3,
+        dots: true,
+        responsive: [{
+            breakpoint: 1024,
+            settings: {
+                slidesToShow: 3,
+                slidesToScroll: 3
+            }
+        },
+            {
+                breakpoint: 600,
+                settings: {
+                    slidesToShow: 2,
+                    slidesToScroll: 3
+                }
+            },
+            {
+                breakpoint: 480,
+                settings: {
+                    slidesToShow: 2,
+                    slidesToScroll: 3
+                }
+            }
+        ]
+    });
+</script>
+
+
+<!-- Core plugin JavaScript-->
+<script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+<!-- Custom scripts for all pages-->
+<script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+{% block extra_scripts %}
+{% endblock extra_scripts %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+<script type="text/javascript">
+    $('.likebutton').click(function () {
+        console.log('nknknk')
+        var catid;
+        catid = $(this).attr("data-catid");
+        $.ajax(
+            {
+                type: "GET",
+                url: "/sales/add_to_favourite/",
+                data: {
+                    product_slug: catid
+                },
+                success: function (data) {
+                    alert(data.result);
+                    if (data.url) {
+                        window.open(data.url, '_self');
+                    }
+                    $('#like' + catid).remove();
+                    $('#message').text(data);
+                }
+            })
+    });
+</script>
+
+<script src="https://unpkg.com/htmx.org@1.1.0"></script>
+<script>
+    document.body.addEventListener('htmx:configRequest', (event) => {
+        event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+    })
+</script>
+{% include "toasts.html" %}
+
+{#<script src="https://unpkg.com/htmx.org@1.8.0"#}
+{#        integrity="sha384-cZuAZ+ZbwkNRnrKi05G/fjBX+azI9DNOkNYysZ0I/X5ZFgsmMiBXgDZof30F5ofc"#}
+{#        crossorigin="anonymous"></script>#}
+<script src="{% static 'toasts.js' %}"></script>
+
+<script>
+    $(document).ready(function () {
+        window.news_index = '{% url 'shopping' %}';
+
+        var page = 1;
+        var block_request = false;
+        var end_pagination = false;
+
+        $(window).scroll(function () {
+            var margin = $(document).height() - $(window).height() - 200;
+            if ($(window).scrollTop() > margin && end_pagination === false && block_request === false) {
+                block_request = true;
+                page += 1;
+
+                $.ajax({
+                    type: 'GET',
+                    url: window.news_index,
+                    data: {
+                        "page": page
+                    },
+                    success: function (data) {
+                        if (data.end_pagination === true) {
+                            end_pagination = true;
+                        } else {
+                            block_request = false;
+                        }
+                        $('.news-list').append(data.content);
+                    }
+                })
+            }
+        });
+    })
+</script>
+</body>
+
+
+{#{% for message in messages %}#}
+{#    <div class="toast-container p-3 top-0 end-0">#}
+{#        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">#}
+{#            {% if message.tags == 'success' %}#}
+{#                <div class="toast-header bg-success">#}
+{#                    <strong class="me-auto">Info</strong>#}
+{#                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>#}
+{#                </div>#}
+{#                <div class="toast-body bg-success">#}
+{#                    {{ message }}#}
+{#                </div>#}
+{#            {% elif message.tags == 'error' %}#}
+{#                <div class="toast-header bg-danger">#}
+{#                    <strong class="me-auto">Info</strong>#}
+{#                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>#}
+{#                </div>#}
+{#                <div class="toast-body bg-danger">#}
+{#                    {{ message }}#}
+{#                </div>#}
+{#            {% elif message.tags == 'warning' %}#}
+{#                <div class="toast-header bg-warning">#}
+{#                    <strong class="me-auto">Info</strong>#}
+{#                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>#}
+{#                </div>#}
+{#                <div class="toast-body bg-warning">#}
+{#                    {{ message }}#}
+{#                </div>#}
+{#            {% elif message.tags == 'info' %}#}
+{#                <div class="toast-header bg-info">#}
+{#                    <strong class="me-auto">Info</strong>#}
+{#                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>#}
+{#                </div>#}
+{#                <div class="toast-body bg-info">#}
+{#                    {{ message }}#}
+{#                </div>#}
+{#            {% endif %}#}
+{#        </div>#}
+{#    </div>#}
+{#{% endfor %}#}

@@ -1,0 +1,155 @@
+{% load currency %}
+{% currency_context %}
+{% for product in productlist %}
+    {#    {% if forloop.last %}#}
+    {#        <div hx-get='{% url 'shopping' %}?page={{ page_obj.number|add:1 }}' hx-trigger="revealed" hx-swap="afterend"#}
+    {#             hx-target="this">#}
+    {#    {% else %}#}
+    {#    {% endif %}#}
+    <div class="col-md-3">
+        <div class="card mb-4 product-wap rounded-0">
+            <div class="card rounded-0">
+                <div class="card" id="search-results">
+                    {% if product.main_image %}
+                        <img class="card-img rounded-0 img-fluid"
+                             src="{{ product.main_image.url }}" alt="mainimage">
+                    {% else %}
+                        <img class="card-img rounded-0 img-fluid" src="/static/img/shop_01.jpg">
+                    {% endif %}
+                    <div class="card-img-overlay rounded-0 product-overlay d-flex align-items-center justify-content-center">
+                        <ul class="list-unstyled">
+                            <li><a class="btn btn-info text-white mt-2 likebutton"
+                                   id="like{{ product.slug }}"
+                                   href="#"
+                                   data-catid="{{ product.slug }}"><i
+                                    class="far fa-heart"></i></a></li>
+
+                            <li><a class="btn btn-info text-white mt-2"
+                                   href="{% url 'product-det' product.slug %}"><i
+                                    class="far fa-eye"></i></a></li>
+                            <li>
+                                {% if product.productattribute_set.count <= 1 %}
+                                    <a class="btn btn-info text-white mt-2"
+                                       href="{% url 'add-to-cart' product.slug %}">
+                                        <i class="fas fa-cart-plus"></i>
+                                    </a>
+                                {% else %}
+                                    <a class="btn btn-info text-white mt-2"
+                                       type="button"
+                                       data-bs-toggle="offcanvas"
+                                       data-bs-target="#offcanvasBuy{{ product.slug }}"
+                                       aria-controls="offcanvasBuy{{ product.slug }}"
+                                       href="{% url 'order-summary' %}">
+                                        <i class="fas fa-cart-plus"></i>
+                                        <span class="position-absolute top-0 left-100 translate-middle badge rounded-pill bg-light text-dark"></span>
+                                    </a>
+                                {% endif %}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+
+                <div class="offcanvas offcanvas-end" tabindex="-1"
+                     id="offcanvasBuy{{ product.slug }}"
+                     aria-labelledby="offcanvasBuyLabel">
+                    <div class="offcanvas-header">
+                        <a type="button" href='{% url 'order-summary' %}' class="btn-file"
+                           style="float: left">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25"
+                                 fill="black"
+                                 class="bi bi-box-arrow-up-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                      d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"></path>
+                                <path fill-rule="evenodd"
+                                      d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"></path>
+                            </svg>
+                        </a>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
+                                aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <div class="col-md-12 mb-4">
+
+                            <h4 class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="text-muted">{{ product.name }} <br/> {{ product.description_s }}</span>
+
+                                <img
+                                        src="{{ product.main_image.url }}"
+                                        width="100px"
+                                        height="100px" alt="test">
+                            </h4>
+
+                            <form action="{% url 'add_to_cart_new' product.slug %}" method="GET">
+
+                                <input type="hidden" name="name-product" value="{{ product.name }}">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        {% if product.productattribute_set.count > 1 %}
+                                            <h6 class="d-flex justify-content-between align-items-center mb-3">
+                                                Available Volume Sizes </h6>
+                                            {% for var in product.productattribute_set.all %}
+                                                <ul class="list-inline pb-3">
+                                                    <li class="list-inline-item">
+                                                        <span class="text-muted">{{ var.size }}{{ var.size.unit }} </span>:
+                                                        <input required type="radio"
+                                                               name="size-product"
+                                                               id="size-product"
+                                                               value="{{ var.size.id }}">
+                                                    </li>
+                                                </ul>
+                                            {% endfor %}
+                                        {% endif %}
+
+                                        <input type="number" class="form-control"
+                                               name="qty-product"
+                                               id="qty-product" placeholder="Qty"/>
+                                    </div>
+
+                                </div>
+                                <br/>
+
+                                <div class="row pb-3">
+                                    <div class="col d-grid">
+                                        <button type="submit" class="btn btn-info btn-lg"
+                                                name="submit"
+                                                value="addtocard"> Add To Cart <i
+                                                class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+
+                        </div>
+                    </div>
+
+
+                </div>
+
+            </div>
+            <div class="card-body">
+                <a href="{% url 'product-det' product.slug %}"
+                   class="h3 text-decoration-none">{{ product.name }}</a>
+
+                <a class="float-right mb-0">
+                    {% with product.productattribute_set.all|first as att %}
+                        <a class="float-right btn btn-info">
+                            {{ att.product_price|currency:request.session.currency }} {{ request.session.currency }}
+                        </a>
+                    {% endwith %}
+                </a>
+            </div>
+
+            <div class="card-footer">
+                <a class="h3 text-decoration-none">size</a>
+                {% with product.productattribute_set.all|first as att %}
+                    <a class="float-right btn btn-info">
+                        {{ att.size }}{{ att.size.unit }}
+                    </a>
+
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+{% endfor %}
